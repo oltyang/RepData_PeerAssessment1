@@ -9,7 +9,8 @@ This assignment makes use of data from a personal activity monitoring device. Th
 ## Loading and preprocessing the data
 First step is to load the data:
 
-```{r}
+
+```r
 dfActivity <- read.csv(unz("activity.zip", "activity.csv"), header=TRUE, sep=",")
 ```
 
@@ -18,50 +19,79 @@ dfActivity <- read.csv(unz("activity.zip", "activity.csv"), header=TRUE, sep=","
 
 1: I make a **histogram** of the total number of steps taken each day:
 
-```{r}
+
+```r
 dfStepsByDays <- aggregate(steps ~ date, data = dfActivity, FUN = sum, na.rm = TRUE, na.action = na.pass)
 
 hist(dfStepsByDays$steps, main = "Total number of steps taken per day", col = "red", breaks = 20,
      xlab = "Number of steps taken a day", ylab = "Number of days")
 ```
 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+
 2: I calculate and report the **mean** and **median** total number of steps taken per day:
 
-```{r}
+
+```r
 mean(dfStepsByDays$steps, na.rm = TRUE)
+```
+
+```
+## [1] 9354
+```
+
+```r
 median(dfStepsByDays$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
 
 1: I make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 dfStepsByIntervals <- aggregate(steps ~ interval, data = dfActivity, FUN = mean, na.rm = TRUE)
 
 plot(dfStepsByIntervals$interval, dfStepsByIntervals$steps, type = "l", main = "Average number of steps taken during a day",
      xlab = "5-minute intervals", ylab = "Average number of steps taken")
 ```
 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+
 2: The following 5-minute interval, On average across all the days in the dataset, contains the maximum number of steps:
 
-```{r}
+
+```r
 dfStepsByIntervals[dfStepsByIntervals$steps == max(dfStepsByIntervals$steps, na.rm = TRUE),]$interval
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 
 1: I calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r}
+
+```r
 nrow(dfActivity[is.na(dfActivity$steps),])
+```
+
+```
+## [1] 2304
 ```
 
 2: I've decided to apply the following a strategy for filling in all of the missing values in the dataset: I use the mean of the missing 5-minute interval (calculated on the whole dataset) for filling in the missing value.
 
 3: I create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
+
+```r
 dfActivityImp <- dfActivity
 
 for (i in 1:nrow(dfActivityImp)) {
@@ -73,14 +103,30 @@ for (i in 1:nrow(dfActivityImp)) {
 
 4: I make a **histogram** of the total number of steps taken each day and calculate and report the **mean** and **median** total number of steps taken per day.
 
-```{r}
+
+```r
 dfStepsByDaysImp <- aggregate(steps ~ date, data = dfActivityImp, FUN = sum)
 
 hist(dfStepsByDaysImp$steps, main = "Total number of steps taken per day", col = "red", breaks = 20,
      xlab = "Number of steps taken a day", ylab = "Number of days")
+```
 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+
+```r
 mean(dfStepsByDaysImp$steps)
+```
+
+```
+## [1] 10766
+```
+
+```r
 median(dfStepsByDaysImp$steps)
+```
+
+```
+## [1] 10766
 ```
 
 Because of the selected imputing strategy the completely empty days (which originally contain only NAs) were imputed with the average number of steps taken in the intervals of the average day. Therefore
@@ -91,7 +137,8 @@ Because of the selected imputing strategy the completely empty days (which origi
 
 1: I create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 dfActivityImp <- transform(dfActivityImp, 
                            daytype = as.factor(ifelse(as.POSIXlt(strptime(dfActivityImp$date, "%Y-%m-%d"))$wday %in% c(6,7), 
                                                       "weekend", "weekday")))
@@ -99,7 +146,8 @@ dfActivityImp <- transform(dfActivityImp,
 
 2: I make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r}
+
+```r
 dfStepsByIntAndDayType <- aggregate(steps ~ interval + daytype, data = dfActivityImp, FUN = mean)
 
 library(lattice)
@@ -107,3 +155,5 @@ xyplot(steps ~ interval | daytype, data = dfStepsByIntAndDayType, layout = c(1,2
        main = "Average number of steps taken,\n averaged across all weekday days or weekend days",
        xlab = "Interval", ylab = "Number of steps")
 ```
+
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
